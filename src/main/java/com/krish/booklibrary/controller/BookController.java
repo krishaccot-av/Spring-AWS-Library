@@ -1,16 +1,21 @@
 package com.krish.booklibrary.controller;
 
-import com.krish.booklibrary.model.Book;
-import com.krish.booklibrary.model.BookIssue;
-import com.krish.booklibrary.model.BookReview;
+import com.krish.booklibrary.model.*;
 import com.krish.booklibrary.service.BookService;
 import com.krish.booklibrary.service.BookServiceImpl;
 import com.krish.booklibrary.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 @RestController
 @RequestMapping("api/v1/book")
@@ -79,5 +84,14 @@ public class BookController {
         bookService.deleteBookIssue(id);
     }
 
-
+    @GetMapping("google/search/{searchKey}")
+    public List<BookItem> searchGoogleBooks(@PathVariable String searchKey) throws ExecutionException, InterruptedException {
+        Future<SearchResult> task = bookService.googleBookSearch(searchKey);
+        try {
+            SearchResult res =  task.get();
+            return res.items.stream().filter(item -> (item.volumeInfo.pageCount != null? item.volumeInfo.pageCount : 0)>200).toList();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

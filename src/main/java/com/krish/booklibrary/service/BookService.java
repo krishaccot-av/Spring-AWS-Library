@@ -3,10 +3,12 @@ package com.krish.booklibrary.service;
 import com.krish.booklibrary.model.Book;
 import com.krish.booklibrary.model.BookIssue;
 import com.krish.booklibrary.model.BookReview;
+import com.krish.booklibrary.model.SearchResult;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Future;
 
 public interface BookService {
     List<Book> getBooks();
@@ -30,6 +32,8 @@ public interface BookService {
     BookIssue saveBookIssue(BookIssue issue);
 
     void deleteBookIssue(Long id);
+
+    Future<SearchResult> googleBookSearch(String searchKey);
 
 
 

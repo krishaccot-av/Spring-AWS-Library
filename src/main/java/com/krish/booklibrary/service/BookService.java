@@ -1,14 +1,13 @@
 package com.krish.booklibrary.service;
 
 import com.krish.booklibrary.model.Book;
-import com.krish.booklibrary.model.BookIssue;
+import com.krish.booklibrary.model.SubscribeBook;
 import com.krish.booklibrary.model.BookReview;
 import com.krish.booklibrary.model.SearchResult;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 
 public interface BookService {
     List<Book> getBooks();
@@ -27,13 +26,15 @@ public interface BookService {
 
     void deleteReview(Long id);
 
-    List<BookIssue> getBookIssues(Long bookId);
+    List<SubscribeBook> getSubscribeBooks(Long bookId);
 
-    BookIssue saveBookIssue(BookIssue issue);
+    SubscribeBook saveSubscribeBook(SubscribeBook issue);
+
+    List<Book> subscribedBooks();
 
     void deleteBookIssue(Long id);
 
-    Future<SearchResult> googleBookSearch(String searchKey);
+    CompletableFuture<SearchResult> googleBookSearch(String searchKey);
 
 
 

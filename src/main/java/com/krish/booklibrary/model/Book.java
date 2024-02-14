@@ -9,7 +9,20 @@ public class Book {
     private Long id;
     private String title;
     private String slug;
-    private String authorName;
+
+
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "authorId")
+    private Author author;
+
+    public Author getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(Author author) {
+        this.author = author;
+    }
     private String category;
     private Long availability;
     private String isbn;
@@ -38,14 +51,6 @@ public class Book {
 
     public void setSlug(String slug) {
         this.slug = slug;
-    }
-
-    public String getAuthorName() {
-        return authorName;
-    }
-
-    public void setAuthorName(String authorName) {
-        this.authorName = authorName;
     }
 
     public String getCategory() {

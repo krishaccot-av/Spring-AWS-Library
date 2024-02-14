@@ -2,30 +2,26 @@ package com.krish.booklibrary.controller;
 
 import com.krish.booklibrary.model.*;
 import com.krish.booklibrary.service.BookService;
-import com.krish.booklibrary.service.BookServiceImpl;
 import com.krish.booklibrary.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("api/v1/book")
 public class BookController {
-
-    @Autowired
     BookService bookService;
 
-    @Autowired
     UserService userService;
+    public BookController(BookService bookService,UserService userService)
+    {
+        this.bookService = bookService;
+        this.userService = userService;
+    }
 
     @GetMapping("")
     public List<Book> getAllBooks()
@@ -39,7 +35,7 @@ public class BookController {
         return bookService.getBook(id);
     }
 
-    @PostMapping("save")
+    @PostMapping("")
     public Book saveBook(@RequestBody Book book) {
         System.out.println("${---:"+book.getTitle());
         return bookService.saveBook(book);
@@ -57,8 +53,8 @@ public class BookController {
 
     @PostMapping("reviews/{bookId}/{username}")
     public BookReview saveBookReview(@PathVariable Long bookId,@PathVariable String username, @RequestBody BookReview review){
-        review.setBook(bookService.getBook(bookId).get());
-        review.setUser(userService.getUser(username).get());
+        bookService.getBook(bookId).ifPresent(review::setBook);
+        userService.getUser(username).ifPresent(review::setUser);
         return bookService.saveBookReview(review);
     }
 
@@ -67,26 +63,31 @@ public class BookController {
         bookService.deleteReview(id);
     }
 
-    @GetMapping("/issues/{bookId}")
-    public List<BookIssue> getBookIssues(@PathVariable Long bookId) {
-        return bookService.getBookIssues(bookId);
+    @GetMapping("/subscriptions/{bookId}")
+    public List<SubscribeBook> getBookIssues(@PathVariable Long bookId) {
+        return bookService.getSubscribeBooks(bookId);
     }
 
-    @PostMapping("issues/{bookId}/{username}")
-    public BookIssue saveBookIssue(@PathVariable Long bookId,@PathVariable String username, @RequestBody BookIssue issue){
-        issue.setBook(bookService.getBook(bookId).get());
-        issue.setUser(userService.getUser(username).get());
-        return bookService.saveBookIssue(issue);
+    @GetMapping("/subscriptions")
+    public List<Book> getIssuedBooks() {
+        return bookService.subscribedBooks();
     }
 
-    @DeleteMapping("issues/{id}")
+    @PostMapping("subscriptions/{bookId}/{username}")
+    public SubscribeBook saveBookIssue(@PathVariable Long bookId, @PathVariable String username, @RequestBody SubscribeBook issue){
+        bookService.getBook(bookId).ifPresent(issue::setBook);
+        userService.getUser(username).ifPresent(issue::setUser);
+        return bookService.saveSubscribeBook(issue);
+    }
+
+    @DeleteMapping("subscriptions/{id}")
     public void deleteBookIssue(@PathVariable Long id){
         bookService.deleteBookIssue(id);
     }
 
     @GetMapping("google/search/{searchKey}")
-    public List<BookItem> searchGoogleBooks(@PathVariable String searchKey) throws ExecutionException, InterruptedException {
-        Future<SearchResult> task = bookService.googleBookSearch(searchKey);
+    public List<BookItem> searchGoogleBooks(@PathVariable String searchKey) {
+        CompletableFuture<SearchResult> task = bookService.googleBookSearch(searchKey);
         try {
             SearchResult res =  task.get();
             return res.items.stream().filter(item -> (item.volumeInfo.pageCount != null? item.volumeInfo.pageCount : 0)>200).toList();

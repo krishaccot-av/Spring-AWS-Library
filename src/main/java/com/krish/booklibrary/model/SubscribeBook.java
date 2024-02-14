@@ -8,7 +8,7 @@ import org.hibernate.annotations.OnDeleteAction;
 import java.util.Date;
 
 @Entity
-public class BookIssue {
+public class SubscribeBook {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
@@ -57,5 +57,5 @@ public class BookIssue {
         this.date = date;
     }
 
-    public BookIssue(){}
+    public SubscribeBook(){}
 }

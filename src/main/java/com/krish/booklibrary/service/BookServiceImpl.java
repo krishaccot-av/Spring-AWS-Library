@@ -1,21 +1,20 @@
 package com.krish.booklibrary.service;
 
 import com.krish.booklibrary.model.Book;
-import com.krish.booklibrary.model.BookIssue;
+import com.krish.booklibrary.model.SubscribeBook;
 import com.krish.booklibrary.model.BookReview;
 import com.krish.booklibrary.model.SearchResult;
-import com.krish.booklibrary.repository.BookIssueRepository;
+import com.krish.booklibrary.repository.SubscribeBookRepository;
 import com.krish.booklibrary.repository.BookRepository;
 import com.krish.booklibrary.repository.BookReviewRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class BookServiceImpl implements BookService {
@@ -23,7 +22,7 @@ public class BookServiceImpl implements BookService {
 
     BookRepository repository;
     BookReviewRepository reviewRepository;
-    BookIssueRepository issueRepository;
+    SubscribeBookRepository issueRepository;
 
 
     @Override
@@ -68,13 +67,18 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<BookIssue> getBookIssues(Long bookId) {
-        return issueRepository.findByBookId(bookId);
+    public SubscribeBook saveSubscribeBook(SubscribeBook issue) {
+        return issueRepository.save(issue);
     }
 
     @Override
-    public BookIssue saveBookIssue(BookIssue issue) {
-        return issueRepository.save(issue);
+    public List<Book> subscribedBooks() {
+        return repository.findBySubscribeBooks();
+    }
+
+    @Override
+    public List<SubscribeBook> getSubscribeBooks(Long bookId) {
+        return issueRepository.findByBookId(bookId);
     }
 
     @Override
@@ -85,14 +89,16 @@ public class BookServiceImpl implements BookService {
     @Value("${googlebookapikey}")
     private String googleApiKey;
     @Override
-    public Future<SearchResult> googleBookSearch(String searchKey) {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
+    @Async
+    public CompletableFuture<SearchResult> googleBookSearch(String searchKey) {
+
         RestTemplate restTemplate = new RestTemplate();
-        return executor.submit(() -> restTemplate.getForObject("https://www.googleapis.com/books/v1/volumes?q={searchKey}&key={googleApiKey}", SearchResult.class, searchKey, googleApiKey));
+        SearchResult result =  restTemplate.getForObject("https://www.googleapis.com/books/v1/volumes?q={searchKey}&key={googleApiKey}", SearchResult.class, searchKey, googleApiKey);
+        return CompletableFuture.completedFuture(result);
     }
 
 
-    public BookServiceImpl(BookRepository repository, BookReviewRepository reviewRepository, BookIssueRepository issueRepository)
+    public BookServiceImpl(BookRepository repository, BookReviewRepository reviewRepository, SubscribeBookRepository issueRepository)
     {
         this.repository = repository;
         this.reviewRepository=reviewRepository;

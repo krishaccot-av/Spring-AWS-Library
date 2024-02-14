@@ -5,7 +5,7 @@ import java.util.List;
 public class Data {
     private List<Book> books;
     private List<User> users;
-    private List<BookIssue> issues;
+    private List<SubscribeBook> issues;
     private List<BookReview> reviews;
 
     public List<Author> getAuthors() {
@@ -34,11 +34,11 @@ public class Data {
         this.users = users;
     }
 
-    public List<BookIssue> getIssues() {
+    public List<SubscribeBook> getIssues() {
         return issues;
     }
 
-    public void setIssues(List<BookIssue> issues) {
+    public void setIssues(List<SubscribeBook> issues) {
         this.issues = issues;
     }
 

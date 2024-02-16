@@ -15,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 @Service
 public class BookServiceImpl implements BookService {
@@ -23,7 +24,12 @@ public class BookServiceImpl implements BookService {
     BookRepository repository;
     BookReviewRepository reviewRepository;
     SubscribeBookRepository issueRepository;
-
+    public BookServiceImpl(BookRepository repository, BookReviewRepository reviewRepository, SubscribeBookRepository issueRepository)
+    {
+        this.repository = repository;
+        this.reviewRepository=reviewRepository;
+        this.issueRepository = issueRepository;
+    }
 
     @Override
     public List<Book> getBooks() {
@@ -95,13 +101,5 @@ public class BookServiceImpl implements BookService {
         RestTemplate restTemplate = new RestTemplate();
         SearchResult result =  restTemplate.getForObject("https://www.googleapis.com/books/v1/volumes?q={searchKey}&key={googleApiKey}", SearchResult.class, searchKey, googleApiKey);
         return CompletableFuture.completedFuture(result);
-    }
-
-
-    public BookServiceImpl(BookRepository repository, BookReviewRepository reviewRepository, SubscribeBookRepository issueRepository)
-    {
-        this.repository = repository;
-        this.reviewRepository=reviewRepository;
-        this.issueRepository = issueRepository;
     }
 }
